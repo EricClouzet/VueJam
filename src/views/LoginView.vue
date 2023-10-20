@@ -1,48 +1,55 @@
 <script setup>
 import { ref } from 'vue';
-    async function handleSubmit(event){
-        event.preventDefault()
-        console.log(JSON.stringify({"username":username.value, "password":password.value}))        
-        // const res = await fetch('http://127.0.0.1:8000/api/login',
-        // {
-        //     method: "POST",
-        //     headers: {
-        //     "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify({"username":username.value, "password":password.value})
-        // })
-        // const data = await res.json()
+import axios from 'axios';
+import { useRouter } from 'vue-router';
 
-    }             
+const router = useRouter();
+const form = ref({
+    email: '',
+    password: ''
+})
+
+const loginError = ref(null);
+
+const handleLogin = async () => {
+    try {
+        console.log('Trying to log in...');
+        await axios.post('http://localhost:8000/api/login', {
+            email: form.value.email,
+            password:form.value.password,
+        });
+        console.log('Login successful!');
+        router.push("/");
+    } catch (error) {
+        console.error('Login failed:', error);
+        loginError.value = "La connexion a échoué"
+    }
     
-    let username = ref("")
-    let password = ref("")
-    
+}
+
 </script>
 <template>
  <div class="row col-6">      
 
         <h1 class="my-5">Login</h1>
-        <form @submit="handleSubmit">
+        <form @submit.prevent="handleLogin">
             
             <div class="form-outline mb-4">
-                <input type="text" class="form-control" id="username" v-model="username">
+                <input type="email" class="form-control" id="email" v-model="form.email">
 
-                <label class="form-label" for="username">Email address</label>
+                <label class="form-label" for="email">Email address</label>
             </div>
 
             
             <div class="form-outline mb-4">
-                <input type="password" id="password" v-model="password" class="form-control"/>
+                <input type="password" id="password" v-model="form.password" class="form-control"/>
                 <label class="form-label" for="password">Password</label>
             </div>
-
-
             
             <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>
 
-            
             <div class="text-center">
+                <p v-if="loginError" class="text-danger"> La connexion a échoué</p>
                 <p>Not a member? <a href="">Register</a></p>
             </div>
         </form>
